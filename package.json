@@ -1,0 +1,14 @@
+{
+  "name": "line_reader",
+  "version": "1.0.0",
+  "description": "REST API to return the given line from a text file",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Matthew Coleman",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.13.4"
+  }
+}
