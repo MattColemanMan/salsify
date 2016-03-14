@@ -1,0 +1,40 @@
+To run: run "node main.js ___" where ___ is a text file you want to make the API around.
+Tested on Windows 10 and Linux Mint.
+
+My system works by reading each line and storing them in a huge array. Whenever the API is called a lookup on the array is performed and the result returned.
+
+The API is a simple express web service in Node JS
+
+Hypothetically a nodejs process cannot use more than 1.5 gigs of memory, so since this program is so small the actual limit for this system is ~1.4 gigs. When I tested it however, I would get out of memory errors when reading a file containing 256 copies of the Project Gutenberg version of War and Peace (~0.803 gigs). I suspect that the actual restriction an array is 1GB, that or express actually needs half a gig to run a simple server, or there’s a ton of overhead on a JavaScript array (most likely).
+
+While this is probably the fastest possible system for a small file (<1GB) it does not scale AT ALL beyond that size, due to the NodeJS restrictions stated earlier. For the most part I think this restriction is fine, you really shouldn’t have text files longer then 1GB, that’s equivalent to a few hundred copies of War and Peace. The only file I could see being bigger is some kind of log file, but really that should be divided up for organization.
+If I was to design this for a larger file, I would use a similar system but with an actual database as my datastore. When placed behind a cache the performance should be good enough, and it could handle hypothetically unlimited data.
+
+My system preforms very well with a large number of users. Since each request is only an array lookup it responds in constant time, so each request takes practically 0 time. A potential issue might be that all lookups are hitting the same array, which has the potential to strain the resource. However since the array is kept in memory there is literally nothing faster, and since its only a single lookup the strain is actually very low. It wouldn’t be hard to clone the array across a few systems under a load balancer to easily expand the number of connections allowed, or cache it on a dedicated cache machine somewhere.
+
+ 
+
+I admittedly had never actually set up a node JS project from scratch by myself (someone else always volunteered) so while I knew the tool in general the Express JS guide, particularly the routing part (http://expressjs.com/en/guide/routing.html) was very helpful.
+
+There were also a few Quora questions I can’t locate any more debating if the javascript file reader holds everything in memory or not. They couldn’t agree and the debate was old, but line-by-line (https://www.npmjs.com/package/line-by-line) explicitly only holds the current line in memory, so I used that for line parsing.
+
+ 
+
+I chose Node JS (and javascript) because I knew I would need a web framework and it was the web language I had worked with most recently. I also considered Ruby and Java. Ruby I decided against for performance reasons, and I haven’t used it super recently, as well as Rails being a very heavy weight framework for this task. While I know this could be built in Java I have never hooked Java directly up to the web, nor know of any way to do it. I’m sure it’s possible but stressed for time I wanted to avoid researching new packages and starting from basically scratch.
+I chose Express because I wanted a lightweight web framework around node, and had worked with express before at a hackathon, so it would be familiar and easy, even if I had never set it up solo.
+
+Line-by-line was chosen because it explicitly does not hold the entire file in memory while reading it. Since I am already holding the entire file in memory I didn’t want to hold it twice, and the documentation in the standard file reading library was unclear, as were the several years old debates I found on the issue.
+
+I used project gutenburg’s plain text version of War and Peace (http://www.gutenberg.org/cache/epub/2600/pg2600.txt) to test out my implementation on a large document. I then appended it to itself several dozen time when I noticed it was still too small. Also when I noticed that War and Peace was only .003 GB, I decided that the >10GB test case was likely unrealistic for a text file and focused on the <1GB use case.
+
+I also used http://textmechanic.com/text-tools/numeration-tools/generate-list-numbers/ to generate large number lists for more accurate testing towards the end.
+
+ 
+
+I spent about an hour or two working on this exercise, with another half hour thinking about it and reading some documentation over lunch. An additional half hour was spent on this text document.
+
+ 
+
+While I think my implementation is very good for files less than 1GB, I would have liked to incorporate an on disk data store with a cache to handle large files that can’t be stored in memory. I initially avoided using a database assuming it would be overkill for the size of a standard text file, and while I still think it is, I feel like my system should just be the cache for a database that handles larger files.  
+
+Stylistically it’s mostly fine. Some lines are longer than 80 chars but those are error messages and personally that limit is fairly outdated. Its also a bit cluttered and could use more whitespace, but that might just be my IDE/font.
